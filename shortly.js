@@ -25,19 +25,31 @@ app.use(express.static(__dirname + '/public'));
 
 app.get('/', 
 function(req, res) {
-  res.render('index');
+  // if not logged in
+  res.redirect('/login');
+    // redirect to '/login'
+  // if logged in, render the index
+  // res.render('index');
 });
+
+app.get('/login',
+function(req, res) {
+  res.render('login');
+});
+
 
 app.get('/create', 
 function(req, res) {
-  res.render('index');
+  res.redirect('login');
+  // res.render('index');
 });
 
 app.get('/links', 
 function(req, res) {
-  Links.reset().fetch().then(function(links) {
-    res.send(200, links.models);
-  });
+  res.redirect('login');
+  // Links.reset().fetch().then(function(links) {
+  //   res.send(200, links.models);
+  // });
 });
 
 app.post('/links', 
@@ -74,6 +86,23 @@ function(req, res) {
   });
 });
 
+app.post('/signup',
+  function(req,res){
+    // create new instance of user w req.body object
+    console.log('req.body :',req.body)
+    new User(req.body).fetch().then(function(found) {
+    if (found) {
+      res.send(200, found.attributes);
+    } else {
+      var user = new User(req.body)
+      user.save().then(function(newUser){
+        Users.add(newUser);
+        res.send(200,newUser);
+      })
+    }
+  });
+});
+
 /************************************************************/
 // Write your dedicated authentication routes here
 // e.g. login, logout, etc.
@@ -102,7 +131,7 @@ app.get('/*', function(req, res) {
           .update({
             visits: link.get('visits') + 1,
           }).then(function() {
-        
+
             return res.redirect(link.get('url'));
           });
       });
