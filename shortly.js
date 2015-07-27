@@ -12,7 +12,7 @@ var Link = require('./app/models/link');
 var Click = require('./app/models/click');
 
 var app = express();
-
+var session = require('express-session');
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 app.use(partials());
@@ -22,14 +22,19 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
+app.use(session({
+  resave: false, // don't save session if unmodified
+  saveUninitialized: false, // don't create session until something stored
+  secret: 'shhhh, very secret'
+}));
 
 app.get('/', 
 function(req, res) {
-  // if not logged in
-  res.redirect('/login');
-    // redirect to '/login'
-  // if logged in, render the index
-  // res.render('index');
+  if(!req.session.loggedIn){
+    res.redirect('/login');
+  }else if(req.session.loggedIn === true){
+    res.render('index');
+  }
 });
 
 app.get('/login',
@@ -89,7 +94,6 @@ function(req, res) {
 app.post('/signup',
   function(req,res){
     // create new instance of user w req.body object
-    console.log('req.body :',req.body)
     new User(req.body).fetch().then(function(found) {
     if (found) {
       res.send(200, found.attributes);
@@ -97,7 +101,9 @@ app.post('/signup',
       var user = new User(req.body)
       user.save().then(function(newUser){
         Users.add(newUser);
-        res.send(200,newUser);
+        req.session.loggedIn = true;
+        //res.send(200,newUser);
+        res.redirect('/');
       })
     }
   });
