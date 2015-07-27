@@ -102,6 +102,7 @@ app.get('/*', function(req, res) {
           .update({
             visits: link.get('visits') + 1,
           }).then(function() {
+        
             return res.redirect(link.get('url'));
           });
       });
