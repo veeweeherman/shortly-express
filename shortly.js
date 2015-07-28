@@ -71,6 +71,15 @@ app.get('/signup',
   function(req, res) {
     res.render('signup');
 });
+//app.get request for when LOGOUT button is clicked
+// change loggedIn status to false
+// and redirect to login page
+app.get('/logout',
+  function(req,res) {
+    req.session.loggedIn = false;
+    req.session.userId = null;
+    res.redirect('login');
+  })
 
 app.post('/links', 
 function(req, res) {
