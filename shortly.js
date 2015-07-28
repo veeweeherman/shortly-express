@@ -45,16 +45,22 @@ function(req, res) {
 
 app.get('/create', 
 function(req, res) {
-  res.redirect('login');
-  // res.render('index');
+  if(!req.session.loggedIn){
+    res.redirect('/login');
+  }else if(req.session.loggedIn === true){
+    res.render('index');
+  }
 });
 
 app.get('/links', 
 function(req, res) {
-  res.redirect('login');
-  // Links.reset().fetch().then(function(links) {
-  //   res.send(200, links.models);
-  // });
+  if(!req.session.loggedIn){
+    res.redirect('/login');
+  }else if(req.session.loggedIn === true){
+    Links.reset().fetch().then(function(links) {
+      res.send(200, links.models);
+    });
+  }
 });
 
 app.post('/links', 
@@ -107,6 +113,19 @@ app.post('/signup',
       })
     }
   });
+});
+
+app.post('/login',
+  function(req,res){
+    new User(req.body).fetch().then(function(found){
+      if (found) {
+        req.session.loggedIn = true;
+        res.redirect('/');
+      } else {
+        res.redirect('/login');
+
+      }
+    })
 });
 
 /************************************************************/
