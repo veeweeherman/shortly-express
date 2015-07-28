@@ -17,6 +17,9 @@ var Link = db.Model.extend({
       shasum.update(model.get('url'));
       model.set('code', shasum.digest('hex').slice(0, 5));
     });
+  },
+  user: function(){
+    return this.belongsTo(User, 'user_id')
   }
 });
 

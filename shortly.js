@@ -28,13 +28,23 @@ app.use(session({
   secret: 'shhhh, very secret'
 }));
 
-app.get('/', 
-function(req, res) {
-  if(!req.session.loggedIn){
+function isAuthenticated(req, res, next) {
+
+    // do any checks you want to in here
+
+    // CHECK THE USER STORED IN SESSION FOR A CUSTOM VARIABLE
+    // you can do this however you want with whatever variables you set up
+    if (req.session.loggedIn){
+      return next();
+    }
+
+    // IF A USER ISN'T LOGGED IN, THEN REDIRECT THEM SOMEWHERE
     res.redirect('/login');
-  }else if(req.session.loggedIn === true){
-    res.render('index');
-  }
+}
+
+app.get('/', isAuthenticated,
+function(req, res) {
+  res.render('index');
 });
 
 app.get('/login',
@@ -42,25 +52,22 @@ function(req, res) {
   res.render('login');
 });
 
-
-app.get('/create', 
+app.get('/create', isAuthenticated,
 function(req, res) {
-  if(!req.session.loggedIn){
-    res.redirect('/login');
-  }else if(req.session.loggedIn === true){
-    res.render('index');
-  }
+  res.render('index');
 });
 
-app.get('/links', 
+app.get('/links', isAuthenticated,
 function(req, res) {
-  if(!req.session.loggedIn){
-    res.redirect('/login');
-  }else if(req.session.loggedIn === true){
-    Links.reset().fetch().then(function(links) {
-      res.send(200, links.models);
-    });
-  }
+  Links.reset().fetch().then(function(links) {
+    console.log(links.models);
+    res.send(200, links.models);
+  });
+});
+
+app.get('/signup',
+  function(req, res) {
+    res.render('signup');
 });
 
 app.post('/links', 
@@ -85,7 +92,8 @@ function(req, res) {
         var link = new Link({
           url: uri,
           title: title,
-          base_url: req.headers.origin
+          base_url: req.headers.origin,
+          user_id: req.session.userId 
         });
 
         link.save().then(function(newLink) {
@@ -100,6 +108,7 @@ function(req, res) {
 app.post('/signup',
   function(req,res){
     // create new instance of user w req.body object
+        console.log('NEW USER CREATED!!!!!!!!!!!!');
     new User(req.body).fetch().then(function(found) {
     if (found) {
       res.send(200, found.attributes);
@@ -120,10 +129,10 @@ app.post('/login',
     new User(req.body).fetch().then(function(found){
       if (found) {
         req.session.loggedIn = true;
+        req.session.userId = found.get('id');
         res.redirect('/');
       } else {
         res.redirect('/login');
-
       }
     })
 });
