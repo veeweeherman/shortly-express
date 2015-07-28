@@ -59,7 +59,9 @@ function(req, res) {
 
 app.get('/links', isAuthenticated,
 function(req, res) {
-  Links.reset().fetch().then(function(links) {
+  Links.reset()
+    .query({where: {user_id: req.session.userId}})
+    .fetch().then(function(links) {
     console.log(links.models);
     res.send(200, links.models);
   });
@@ -117,6 +119,7 @@ app.post('/signup',
       user.save().then(function(newUser){
         Users.add(newUser);
         req.session.loggedIn = true;
+        req.session.userId = newUser.get('id');
         //res.send(200,newUser);
         res.redirect('/');
       })
