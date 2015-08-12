@@ -1,7 +1,7 @@
 var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
-var bodyParser = require('body-parser');
+var bodyParser = require('body-parser');;
 
 
 var db = require('./app/config');
